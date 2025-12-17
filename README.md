@@ -11,3 +11,7 @@
 ## 预览
 
 - [https://aurorp1g.github.io/Firework/](https://aurorp1g.github.io/Firework/ "https://aurorp1g.github.io/Firework/")
+
+## 许可证
+
+[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0 "Apache-2.0")  `Copyright © 2025 aurorp1g. All rights reserved.`
