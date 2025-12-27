@@ -785,7 +785,7 @@ function initializeApplication() {
 }
 
 function fitShellPositionHorizontal(position) {
-    const edge = 0.18;
+    const edge = 0.08;
     return (1 - edge * 2) * position + edge;
 }
 
