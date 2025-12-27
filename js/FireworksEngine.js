@@ -1495,11 +1495,80 @@ function crackleStarEffect(star) {
     });
 }
 
-function heartStarEffect(star)  {
+function heartStarEffect_1(star)  {
     const count = highQualityMode ? 32 : 16;
     createParticleArc(0, PI_2, count, 1.8, (angle) => {
         Spark.add(star.x, star.y, COLOR_PALETTE.Gold, angle, Math.pow(Math.random(), 0.45) * 2.4, 300 + Math.random() * 200);
     });
+}
+
+function heartStarEffect_2(star)  {
+    const count = highQualityMode ? 64 : 32;
+    
+    // 爱心参数方程
+    const heartPoints = [];
+    const scale = 0.8; // 爱心大小缩放
+    
+    // 生成爱心形状的点
+    for (let i = 0; i < count; i++) {
+        const t = (i / count) * Math.PI * 2;
+        
+        // 爱心参数方程
+        const x = 16 * Math.pow(Math.sin(t), 3);
+        const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+        
+        const rotatedX = x * 0 + y * (-1);  // rotatedX = 0*x + (-1)*y = -y
+        const rotatedY = x * 1 + y * 0;     // rotatedY = 1*x + 0*y = x
+        
+        heartPoints.push({
+            x: rotatedX * scale,
+            y: rotatedY * scale
+        });
+    }
+    
+    // 创建爱心形状的粒子
+    for (let i = 0; i < heartPoints.length; i++) {
+        const point = heartPoints[i];
+        
+        // 计算粒子的角度和速度
+        const angle = Math.atan2(point.y, point.x);
+        const distance = Math.sqrt(point.x * point.x + point.y * point.y);
+        const speed = distance * 0.15; // 根据距离调整速度
+        
+        // 添加一些随机性使爱心更自然
+        const randomAngle = (Math.random() - 0.5) * 0.3;
+        const randomSpeed = Math.random() * 0.1 + 0.9;
+        
+        // 使用星星的颜色而不是固定的金色
+        const particleColor = star.color === INVISIBLE_COLOR ? COLOR_PALETTE.Gold : star.color;
+        
+        // 创建粒子
+        Spark.add(
+            star.x, 
+            star.y, 
+            particleColor, 
+            angle + randomAngle, 
+            speed * randomSpeed, 
+            400 + Math.random() * 200
+        );
+    }
+    
+    // 添加额外的闪烁效果
+    if (highQualityMode) {
+        for (let i = 0; i < 8; i++) {
+            const flashAngle = Math.random() * Math.PI * 2;
+            const flashSpeed = Math.random() * 0.5 + 0.3;
+            Spark.add(
+                star.x,
+                star.y,
+                COLOR_PALETTE.White,
+                flashAngle,
+                flashSpeed,
+                150 + Math.random() * 100
+            );
+        }
+    }
+    
 }
 
 class FireworkShell {
@@ -1573,10 +1642,14 @@ class FireworkShell {
         let sparkLifeVariation = 0.25;
         let playedDeathSound = false;
         // 爱心烟花随机效果触发标志
-        let enableHeartEffect = false;
+        let heartEffectType = 0;
         if (this.heart) {
-            // 整个烟花有30%的概率触发爱心效果
-            enableHeartEffect = Math.random() < 0.3;
+            // 整个烟花有50%的概率触发爱心效果
+            const heartEffectChance = Math.random();
+            if (heartEffectChance < 0.5) {
+                // 在爱心效果中，heartStarEffect_2有20%的概率，heartStarEffect_1有80%的概率
+                heartEffectType = (Math.random() < 0.2) ? 2 : 1;
+            }
         }
 
         if (this.crossette)
@@ -1597,12 +1670,18 @@ class FireworkShell {
             };
         if (this.heart)
             onDeath = (star) => {
-                if (enableHeartEffect < 0.2) {
+                if (heartEffectType === 1) {
                     if (!playedDeathSound) {
                         audioManager.playSound("crackle");
                         playedDeathSound = true;
                     }
-                    heartStarEffect(star);
+                    heartStarEffect_1(star);
+                } else if (heartEffectType === 2) {
+                    if (!playedDeathSound) {
+                        audioManager.playSound("crackle");
+                        playedDeathSound = true;
+                    }
+                    heartStarEffect_2(star);
                 }
             };
         if (this.floral) onDeath = floralStarEffect;
