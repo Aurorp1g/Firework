@@ -57,7 +57,7 @@ const trailsCanvas = new CanvasStage("trails-canvas");
 const mainCanvas = new CanvasStage("main-canvas");
 const canvasStages = [trailsCanvas, mainCanvas];
 
-const textFireworkContent = [""];
+const textFireworkContent = ["新年快乐", "学业有成", "万事如意", "心想事成", "身体健康", "爱你小猪猪"];
 const textDotMatrices = {};
 textFireworkContent.forEach((word) => {
     textDotMatrices[word] = MathUtilities.convertTextToDotMatrix(word, 3, "Gabriola,华文琥珀", "90px");
@@ -686,6 +686,23 @@ const horsetailShell = (size = 1) => {
     };
 };
 
+const heartShell = (size = 1) => {
+    const limitedSize = 0.3 + Math.random() * 0.2;
+    const color = getRandomColor({ limitWhite: true });
+    return {
+        shellSize: size,
+        spreadSize: 300 + limitedSize * 100,
+        starLife: 1000 + limitedSize * 200,
+        starDensity: 1.2,
+        color,
+        heart: true,
+        glitter: "light",
+        glitterColor: getWhiteOrGold(),
+        pistil: Math.random() < 0.3,
+        pistilColor: createPistilColor(color),
+    };
+};
+
 function getRandomShellName() {
     return Math.random() < 0.5 ? "Crysanthemum" : shellTypesList[(Math.random() * (shellTypesList.length - 1) + 1) | 0];
 }
@@ -724,6 +741,7 @@ const shellFactories = {
     Ring: ringShell,
     Strobe: strobeShell,
     Willow: willowShell,
+    Heart: heartShell,
 };
 
 const shellTypesList = Object.keys(shellFactories);
@@ -1300,6 +1318,49 @@ function renderScene(speed) {
     mainCtx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
+function createTextBurstEffect(wordText, particleFactory, centerX, centerY) {
+    const matrix = getTextDotMatrix(wordText);
+    if (!matrix) return;
+    const dotCenterX = matrix.width / 2;
+    const dotCenterY = matrix.height / 2;
+    const color = getRandomColor();
+    const strobed = Math.random() < 0.5;
+    const strobeColor = strobed ? getRandomColor() : color;
+
+    for (let i = 0; i < matrix.points.length; i++) {
+        const point = matrix.points[i];
+        let x = centerX + (point.x - dotCenterX);
+        let y = centerY + (point.y - dotCenterY);
+        particleFactory({ x, y }, color, strobed, strobeColor);
+    }
+}
+
+function createHeartBurstEffect(count, particleFactory) {
+    const scale = 0.015 * Math.sqrt(count);
+    
+    for (let i = 0; i < count; i++) {
+        const t = (i / count) * Math.PI * 2;
+        
+        const x = 16 * Math.pow(Math.sin(t), 3);
+        const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+        
+        const rotatedX = -y;
+        const rotatedY = x;
+        
+        const angle = Math.atan2(rotatedY, rotatedX);
+        const speed = Math.sqrt(rotatedX * rotatedX + rotatedY * rotatedY) * scale;
+        
+        particleFactory(angle, speed);
+    }
+}
+
+function crossetteStarEffect(star) {
+    const startAngle = Math.random() * PI_HALF;
+    createParticleArc(startAngle, PI_2, 4, 0.5, (angle) => {
+        Star.add(star.x, star.y, star.color, angle, Math.random() * 0.6 + 0.75, 600);
+    });
+}
+
 const currentSkyColor = { r: 0, g: 0, b: 0 };
 const targetSkyColor = { r: 0, g: 0, b: 0 };
 
@@ -1434,6 +1495,13 @@ function crackleStarEffect(star) {
     });
 }
 
+function heartStarEffect(star)  {
+    const count = highQualityMode ? 32 : 16;
+    createParticleArc(0, PI_2, count, 1.8, (angle) => {
+        Spark.add(star.x, star.y, COLOR_PALETTE.Gold, angle, Math.pow(Math.random(), 0.45) * 2.4, 300 + Math.random() * 200);
+    });
+}
+
 class FireworkShell {
     constructor(options) {
         Object.assign(this, options);
@@ -1504,6 +1572,12 @@ class FireworkShell {
         let color, onDeath, sparkFreq, sparkSpeed, sparkLife;
         let sparkLifeVariation = 0.25;
         let playedDeathSound = false;
+        // 爱心烟花随机效果触发标志
+        let enableHeartEffect = false;
+        if (this.heart) {
+            // 整个烟花有30%的概率触发爱心效果
+            enableHeartEffect = Math.random() < 0.3;
+        }
 
         if (this.crossette)
             onDeath = (star) => {
@@ -1520,6 +1594,16 @@ class FireworkShell {
                     playedDeathSound = true;
                 }
                 crackleStarEffect(star);
+            };
+        if (this.heart)
+            onDeath = (star) => {
+                if (enableHeartEffect < 0.2) {
+                    if (!playedDeathSound) {
+                        audioManager.playSound("crackle");
+                        playedDeathSound = true;
+                    }
+                    heartStarEffect(star);
+                }
             };
         if (this.floral) onDeath = floralStarEffect;
         if (this.fallingLeaves) onDeath = fallingLeavesStarEffect;
@@ -1668,6 +1752,8 @@ class FireworkShell {
                         star.sparkTimer = Math.random() * star.sparkFreq;
                     }
                 });
+            } else if (this.heart) {
+                createHeartBurstEffect(this.starCount, starFactory);
             } else {
                 createBurstEffect(this.starCount, starFactory);
             }
