@@ -63,10 +63,444 @@ textFireworkContent.forEach((word) => {
     textDotMatrices[word] = MathUtilities.convertTextToDotMatrix(word, 3, "Gabriola,华文琥珀", "90px");
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    const canvasContainer = document.querySelector(".canvas-container");
-    canvasContainer.style.backgroundImage = "url()";
-    canvasContainer.style.backgroundSize = "100%";
+// 多语言支持系统
+const translations = {
+    'zh-CN': {
+        // 页面标题
+        'pageTitle': '烟花模拟器',
+        
+        // 加载界面
+        'loadingHeader': '加载中',
+        'loadingStatus': '正在装配烟花',
+        
+        // 菜单界面
+        'language': '语言',
+        'settings': '设置',
+        'settingsSubtitle': '若想了解更多信息 请点击任意标签',
+        'close': '关闭',
+        
+        // 控制按钮
+        'shellType': '烟花类型',
+        'shellSize': '烟花大小',
+        'quality': '画质',
+        'skyLighting': '照亮天空',
+        'scaleFactor': '缩放',
+        'wordShell': '文字烟花',
+        'autoLaunch': '自动放烟花',
+        'finaleMode': '同时放更多的烟花',
+        'hideControls': '隐藏控制按钮',
+        'fullscreen': '全屏',
+        'longExposure': '保留烟花的火花',
+        
+        // 选择器选项翻译
+        'Random': '随机',
+        'Crackle': '爆裂',
+        'Chrysanthemum': '菊花',
+        'Falling Leaves': '落叶',
+        'Floral': '花束',
+        'Ghost': '鬼影',
+        'Horse Tail': '马尾',
+        'Palm': '棕榈',
+        'Ring': '圆环',
+        'Explosion Ring': '爆炸环',
+        'Spiral': '螺旋',
+        'Waterfall': '瀑布',
+        'Rainbow': '彩虹',
+        'Meteor': '流星',
+        'Snowflake': '雪花',
+        'Galaxy': '银河',
+        'Lightning': '闪电',
+        'Whirlpool': '漩涡',
+        'Firefall': '火瀑布',
+        'Time Delay': '延时',
+        'Rainbow Whirl': '彩虹漩涡',
+        'Strobe': '频闪',
+        'Willow': '柳树',
+        'Heart': '心形',
+        'Crossette': '十字',
+        
+        // 画质选项
+        '低': '低',
+        '正常': '正常',
+        '高': '高',
+        'Low': '低',
+        'Normal': '正常',
+        'High': '高',
+        
+        // 照亮天空选项
+        '不': '不',
+        '暗': '暗',
+        '正常': '正常',
+        'None': '不',
+        'Dim': '暗',
+        'Normal': '正常',
+        
+        // 帮助内容
+        'languageHelp': {
+            header: '语言',
+            body: '选择界面的语言。支持中文和英文。'
+        },
+        'shellTypeHelp': {
+            header: '烟花类型',
+            body: '你要放的烟花的类型，选择"随机（Random）"可以获得非常好的体验！'
+        },
+        'shellSizeHelp': {
+            header: '烟花大小',
+            body: '烟花越大绽放范围就越大，但是烟花越大，设备所需的性能也会增多，大的烟花可能导致你的设备卡顿。'
+        },
+        'qualityHelp': {
+            header: '画质',
+            body: '如果动画运行不流畅，你可以试试降低画质。画质越高，烟花绽放后的火花数量就越多，但高画质可能导致你的设备卡顿。'
+        },
+        'skyLightingHelp': {
+            header: '照亮天空',
+            body: '烟花爆炸时，背景会被照亮。如果你的屏幕看起来太亮了，可以把它改成"暗"或者"不"。'
+        },
+        'scaleFactorHelp': {
+            header: '缩放',
+            body: '使你与烟花离得更近或更远。对于较大的烟花，你可以选择更小的缩放值，尤其是在手机或平板电脑上。'
+        },
+        'wordShellHelp': {
+            header: '文字烟花',
+            body: '开启后，会出现烟花形状的文字。例如：新年快乐、心想事成等等'
+        },
+        'autoLaunchHelp': {
+            header: '自动放烟花',
+            body: '开启后你就可以坐在你的设备屏幕前面欣赏烟花了，你也可以关闭它，但关闭后你就只能通过点击屏幕的方式来放烟花。'
+        },
+        'finaleModeHelp': {
+            header: '同时放更多的烟花',
+            body: '可以在同一时间自动放出更多的烟花（但需要开启先开启"自动放烟花"）。'
+        },
+        'hideControlsHelp': {
+            header: '隐藏控制按钮',
+            body: '隐藏屏幕顶部的按钮。如果你要截图，或者需要一个无缝的体验，你就可以将按钮隐藏，隐藏按钮后你仍然可以在右上角打开设置。'
+        },
+        'fullscreenHelp': {
+            header: '全屏',
+            body: '切换至全屏模式'
+        },
+        'longExposureHelp': {
+            header: '保留烟花的火花',
+            body: '可以保留烟花留下的火花'
+        }
+    },
+    'en-US': {
+        // 页面标题
+        'pageTitle': 'Fireworks Simulator',
+        
+        // 加载界面
+        'loadingHeader': 'Loading',
+        'loadingStatus': 'Assembling fireworks',
+        
+        // 菜单界面
+        'settings': 'Settings',
+        'settingsSubtitle': 'Click any label for more information',
+        'close': 'Close',
+        
+        // 控制按钮
+        'shellType': 'Firework Type',
+        'shellSize': 'Firework Size',
+        'quality': 'Quality',
+        'skyLighting': 'Sky Lighting',
+        'scaleFactor': 'Scale Factor',
+        'wordShell': 'Text Fireworks',
+        'autoLaunch': 'Auto Launch',
+        'finaleMode': 'Finale Mode',
+        'hideControls': 'Hide Controls',
+        'fullscreen': 'Fullscreen',
+        'longExposure': 'Long Exposure',
+        
+        // 选择器选项翻译
+        'Random': 'Random',
+        'Crackle': 'Crackle',
+        'Chrysanthemum': 'Chrysanthemum',
+        'Falling Leaves': 'Falling Leaves',
+        'Floral': 'Floral',
+        'Ghost': 'Ghost',
+        'Horse Tail': 'Horse Tail',
+        'Palm': 'Palm',
+        'Ring': 'Ring',
+        'Explosion Ring': 'Explosion Ring',
+        'Spiral': 'Spiral',
+        'Waterfall': 'Waterfall',
+        'Rainbow': 'Rainbow',
+        'Meteor': 'Meteor',
+        'Snowflake': 'Snowflake',
+        'Galaxy': 'Galaxy',
+        'Lightning': 'Lightning',
+        'Whirlpool': 'Whirlpool',
+        'Firefall': 'Firefall',
+        'Time Delay': 'Time Delay',
+        'Rainbow Whirl': 'Rainbow Whirl',
+        'Strobe': 'Strobe',
+        'Willow': 'Willow',
+        'Heart': 'Heart',
+        'Crossette': 'Crossette',
+        
+        // 画质选项
+        '低': 'Low',
+        '正常': 'Normal',
+        '高': 'High',
+        'Low': 'Low',
+        'Normal': 'Normal',
+        'High': 'High',
+        
+        // 照亮天空选项
+        '不': 'None',
+        '暗': 'Dim',
+        '正常': 'Normal',
+        'None': 'None',
+        'Dim': 'Dim',
+        'Normal': 'Normal',
+        
+        // 帮助内容
+        'languageHelp': {
+            header: 'Language',
+            body: 'Select the language for the interface. Supports Chinese and English.'
+        },
+        'shellTypeHelp': {
+            header: 'Firework Type',
+            body: 'The type of firework you want to launch. Choosing "Random" provides a great experience!'
+        },
+        'shellSizeHelp': {
+            header: 'Firework Size',
+            body: 'Larger fireworks have a bigger explosion range, but require more device performance. Large fireworks may cause your device to lag.'
+        },
+        'qualityHelp': {
+            header: 'Quality',
+            body: 'If the animation runs slowly, try lowering the quality. Higher quality means more sparks after the firework explodes, but may cause your device to lag.'
+        },
+        'skyLightingHelp': {
+            header: 'Sky Lighting',
+            body: 'When fireworks explode, the background will be illuminated. If your screen appears too bright, you can change it to "Dim" or "None".'
+        },
+        'scaleFactorHelp': {
+            header: 'Scale Factor',
+            body: 'Brings you closer or further from the fireworks. For larger fireworks, you can choose a smaller scale value, especially on mobile or tablet devices.'
+        },
+        'wordShellHelp': {
+            header: 'Text Fireworks',
+            body: 'When enabled, fireworks will form text shapes. For example: Happy New Year, Best Wishes, etc.'
+        },
+        'autoLaunchHelp': {
+            header: 'Auto Launch',
+            body: 'When enabled, you can sit back and enjoy the fireworks on your device screen. If disabled, you can only launch fireworks by clicking the screen.'
+        },
+        'finaleModeHelp': {
+            header: 'Finale Mode',
+            body: 'Allows more fireworks to be launched simultaneously (but requires "Auto Launch" to be enabled first).'
+        },
+        'hideControlsHelp': {
+            header: 'Hide Controls',
+            body: 'Hides the buttons at the top of the screen. Useful for screenshots or a seamless experience. You can still open settings from the top right corner.'
+        },
+        'fullscreenHelp': {
+            header: 'Fullscreen',
+            body: 'Switch to fullscreen mode'
+        },
+        'longExposureHelp': {
+            header: 'Long Exposure',
+            body: 'Preserves the sparks left by fireworks'
+        }
+    }
+};
+
+// 当前语言设置
+let currentLanguage = 'zh-CN';
+
+// 帮助内容对象
+const helpContent = {
+    language: { header: '', body: '' },
+    shellType: { header: '', body: '' },
+    shellSize: { header: '', body: '' },
+    quality: { header: '', body: '' },
+    skyLighting: { header: '', body: '' },
+    scaleFactor: { header: '', body: '' },
+    wordShell: { header: '', body: '' },
+    autoLaunch: { header: '', body: '' },
+    finaleMode: { header: '', body: '' },
+    hideControls: { header: '', body: '' },
+    fullscreen: { header: '', body: '' },
+    longExposure: { header: '', body: '' }
+};
+
+// 语言切换功能
+function setLanguage(lang) {
+    if (translations[lang]) {
+        currentLanguage = lang;
+        localStorage.setItem('fireworks_language', lang);
+        updateUI();
+    }
+}
+
+// 获取翻译文本
+function t(key) {
+    return translations[currentLanguage]?.[key] || key;
+}
+
+// 语言切换功能
+function toggleLanguage() {
+    const newLang = currentLanguage === 'zh-CN' ? 'en-US' : 'zh-CN';
+    setLanguage(newLang);
+}
+
+// 更新界面文本
+function updateUI() {
+    // 更新页面标题
+    document.title = t('pageTitle');
+    
+    // 更新加载界面
+    const loadingHeader = document.querySelector('.loading-init__header');
+    const loadingStatus = document.querySelector('.loading-init__status');
+    if (loadingHeader) loadingHeader.textContent = t('loadingHeader');
+    if (loadingStatus) loadingStatus.textContent = t('loadingStatus');
+    
+    // 更新菜单界面
+    const menuHeader = document.querySelector('.menu__header');
+    const menuSubheader = document.querySelector('.menu__subheader');
+    const helpModalCloseBtn = document.querySelector('.help-modal__close-btn');
+    
+    if (menuHeader) menuHeader.textContent = t('settings');
+    if (menuSubheader) menuSubheader.textContent = t('settingsSubtitle');
+    if (helpModalCloseBtn) helpModalCloseBtn.textContent = t('close');
+    
+    // 更新语言选择器
+    const languageSelect = document.querySelector('.language-select');
+    if (languageSelect) {
+        languageSelect.value = currentLanguage;
+    }
+    
+    // 更新控制按钮标签
+    const labels = {
+        '.language-label': 'language',
+        '.shell-type-label': 'shellType',
+        '.shell-size-label': 'shellSize',
+        '.quality-ui-label': 'quality',
+        '.sky-lighting-label': 'skyLighting',
+        '.scaleFactor-label': 'scaleFactor',
+        '.word-shell-label': 'wordShell',
+        '.auto-launch-label': 'autoLaunch',
+        '.finale-mode-label': 'finaleMode',
+        '.hide-controls-label': 'hideControls',
+        '.fullscreen-label': 'fullscreen',
+        '.long-exposure-label': 'longExposure'
+    };
+    
+    Object.keys(labels).forEach(selector => {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.textContent = t(labels[selector]);
+        }
+    });
+    
+    // 更新语言选择器的选项文本
+    const languageOptions = document.querySelectorAll('.language-select option');
+    if (languageOptions.length >= 2) {
+        languageOptions[0].textContent = t('中文');
+        languageOptions[1].textContent = t('english');
+    }
+
+    // 重新初始化选择器选项以应用翻译
+    updateSelectOptions();
+    
+    // 更新帮助内容
+    helpContent.language = t('languageHelp');
+    helpContent.shellType = t('shellTypeHelp');
+    helpContent.shellSize = t('shellSizeHelp');
+    helpContent.quality = t('qualityHelp');
+    helpContent.skyLighting = t('skyLightingHelp');
+    helpContent.scaleFactor = t('scaleFactorHelp');
+    helpContent.wordShell = t('wordShellHelp');
+    helpContent.autoLaunch = t('autoLaunchHelp');
+    helpContent.finaleMode = t('finaleModeHelp');
+    helpContent.hideControls = t('hideControlsHelp');
+    helpContent.fullscreen = t('fullscreenHelp');
+    helpContent.longExposure = t('longExposureHelp');
+}
+
+// 更新选择器选项
+function updateSelectOptions() {
+    // 保存当前选中的值
+    const currentShellType = domElements.shellType.value;
+    const currentQuality = domElements.quality.value;
+    const currentSkyLighting = domElements.skyLighting.value;
+
+    function populateSelectOptions(node, options) {
+        node.innerHTML = options.reduce((acc, opt) => (acc += `<option value="${opt.value}">${t(opt.label)}</option>`), "");
+    }
+
+    // 烟花类型选项
+    let options = "";
+    shellTypesList.forEach((opt) => (options += `<option value="${opt}">${t(opt)}</option>`));
+    domElements.shellType.innerHTML = options;
+    // 恢复之前选中的值
+    if (currentShellType && shellTypesList.includes(currentShellType)) {
+        domElements.shellType.value = currentShellType;
+    }
+
+    // 画质选项
+    populateSelectOptions(domElements.quality, [
+        { label: "低", value: QUALITY_LOW },
+        { label: "正常", value: QUALITY_NORMAL },
+        { label: "高", value: QUALITY_HIGH },
+    ]);
+    // 恢复之前选中的值
+    if (currentQuality) {
+        domElements.quality.value = currentQuality;
+    }
+
+    // 照亮天空选项
+    populateSelectOptions(domElements.skyLighting, [
+        { label: "不", value: SKY_LIGHT_NONE },
+        { label: "暗", value: SKY_LIGHT_DIM },
+        { label: "正常", value: SKY_LIGHT_NORMAL },
+    ]);
+    // 恢复之前选中的值
+    if (currentSkyLighting) {
+        domElements.skyLighting.value = currentSkyLighting;
+    }
+}
+
+// 语言切换功能
+function handleLanguageChange() {
+    const languageSelect = document.querySelector('.language-select');
+    if (languageSelect) {
+        const newLang = languageSelect.value;
+        setLanguage(newLang);
+    }
+}
+
+// 初始化语言设置
+function initLanguage() {
+    const savedLanguage = localStorage.getItem('fireworks_language');
+    if (savedLanguage && translations[savedLanguage]) {
+        currentLanguage = savedLanguage;
+    } else {
+        // 根据浏览器语言自动检测
+        const browserLang = navigator.language || navigator.userLanguage;
+        if (browserLang.startsWith('zh')) {
+            currentLanguage = 'zh-CN';
+        } else {
+            currentLanguage = 'en-US';
+        }
+    }
+    updateUI();
+}
+
+// 在DOM加载完成后初始化语言
+document.addEventListener('DOMContentLoaded', function() {
+    initLanguage();
+    
+    // 添加语言选择事件监听
+    const languageSelect = document.querySelector('.language-select');
+    if (languageSelect) {
+        languageSelect.addEventListener('change', handleLanguageChange);
+    }
+    
+    const canvasContainer = document.querySelector('.canvas-container');
+    canvasContainer.style.backgroundImage = 'url()';
+    canvasContainer.style.backgroundSize = '100%';
 });
 
 function isFullScreenEnabled() {
@@ -250,52 +684,6 @@ const isFinaleModeEnabled = () => appStateManager.state.config.finale;
 const getSkyLightingSetting = () => parseInt(appStateManager.state.config.skyLighting);
 const getScaleFactor = () => parseFloat(appStateManager.state.config.scaleFactor);
 
-const helpContent = {
-    shellType: {
-        header: "烟花类型",
-        body: "你要放的烟花的类型，选择“随机（Random）”可以获得非常好的体验！",
-    },
-    shellSize: {
-        header: "烟花大小",
-        body: "烟花越大绽放范围就越大，但是烟花越大，设备所需的性能也会增多，大的烟花可能导致你的设备卡顿。",
-    },
-    quality: {
-        header: "画质",
-        body: "如果动画运行不流畅，你可以试试降低画质。画质越高，烟花绽放后的火花数量就越多，但高画质可能导致你的设备卡顿。",
-    },
-    skyLighting: {
-        header: "照亮天空",
-        body: "烟花爆炸时，背景会被照亮。如果你的屏幕看起来太亮了，可以把它改成“暗”或者“不”。",
-    },
-    scaleFactor: {
-        header: "缩放",
-        body: "使你与烟花离得更近或更远。对于较大的烟花，你可以选择更小的缩放值，尤其是在手机或平板电脑上。",
-    },
-    wordShell: {
-        header: "文字烟花",
-        body: "开启后，会出现烟花形状的文字。例如：新年快乐、心想事成等等",
-    },
-    autoLaunch: {
-        header: "自动放烟花",
-        body: "开启后你就可以坐在你的设备屏幕前面欣赏烟花了，你也可以关闭它，但关闭后你就只能通过点击屏幕的方式来放烟花。",
-    },
-    finaleMode: {
-        header: "同时放更多的烟花",
-        body: "可以在同一时间自动放出更多的烟花（但需要开启先开启“自动放烟花”）。",
-    },
-    hideControls: {
-        header: "隐藏控制按钮",
-        body: "隐藏屏幕顶部的按钮。如果你要截图，或者需要一个无缝的体验，你就可以将按钮隐藏，隐藏按钮后你仍然可以在右上角打开设置。",
-    },
-    fullscreen: {
-        header: "全屏",
-        body: "切换至全屏模式",
-    },
-    longExposure: {
-        header: "保留烟花的火花",
-        body: "可以保留烟花留下的火花",
-    },
-};
 
 const domElementKeys = {
     stageContainer: ".stage-container",
@@ -307,6 +695,8 @@ const domElementKeys = {
     pauseBtnSVG: ".pause-btn use",
     soundBtn: ".sound-btn",
     soundBtnSVG: ".sound-btn use",
+    languageSelect: ".language-select",
+    languageLabel: ".language-label",
     shellType: ".shell-type",
     shellTypeLabel: ".shell-type-label",
     shellSize: ".shell-size",
@@ -348,6 +738,7 @@ if (!isFullScreenEnabled()) {
 }
 
 const domToHelpKeyMap = {
+    languageLabel: "language",
     shellTypeLabel: "shellType",
     shellSizeLabel: "shellSize",
     qualityLabel: "quality",
@@ -373,6 +764,9 @@ function renderApplication(state) {
     domElements.menu.classList.toggle("hide", !state.menuOpen);
     domElements.finaleModeFormOption.style.opacity = state.config.autoLaunch ? 1 : 0.32;
 
+    // 更新语言选择器
+    domElements.languageSelect.value = currentLanguage;
+    
     domElements.quality.value = state.config.quality;
     domElements.shellType.value = state.config.shell;
     domElements.shellSize.value = state.config.size;
@@ -426,6 +820,8 @@ function getConfigurationFromDOM() {
     };
 }
 
+// 添加语言选择事件监听
+domElements.languageSelect.addEventListener('input', handleLanguageChange);
 const updateConfigurationNoEvent = () => updateConfiguration();
 domElements.quality.addEventListener("input", updateConfigurationNoEvent);
 domElements.shellType.addEventListener("input", updateConfigurationNoEvent);
@@ -924,7 +1320,7 @@ const rainbowWhirlShell = (size = 1) => {
 };
 
 function getRandomShellName() {
-    return Math.random() < 0.5 ? "Crysanthemum" : shellTypesList[(Math.random() * (shellTypesList.length - 1) + 1) | 0];
+    return Math.random() < 0.5 ? "Chrysanthemum" : shellTypesList[(Math.random() * (shellTypesList.length - 1) + 1) | 0];
 }
 
 function generateRandomShell(size) {
@@ -952,7 +1348,7 @@ const shellFactories = {
     Random: generateRandomShell,
     Crackle: crackleShell,
     Crossette: crossetteShell,
-    Crysanthemum: chrysanthemumShell,
+    Chrysanthemum: chrysanthemumShell,
     "Falling Leaves": fallingLeavesShell,
     Floral: floralShell,
     Ghost: ghostShell,
@@ -983,29 +1379,34 @@ function initializeApplication() {
     domElements.stageContainer.classList.remove("remove");
 
     function populateSelectOptions(node, options) {
-        node.innerHTML = options.reduce((acc, opt) => (acc += `<option value="${opt.value}">${opt.label}</option>`), "");
+        node.innerHTML = options.reduce((acc, opt) => (acc += `<option value="${opt.value}">${t(opt.label)}</option>`), "");
     }
 
+    // 烟花类型选项
     let options = "";
-    shellTypesList.forEach((opt) => (options += `<option value="${opt}">${opt}</option>`));
+    shellTypesList.forEach((opt) => (options += `<option value="${opt}">${t(opt)}</option>`));
     domElements.shellType.innerHTML = options;
 
+    // 烟花大小选项（不需要翻译，因为都是尺寸单位）
     options = "";
     ['3"', '4"', '6"', '8"', '12"', '16"'].forEach((opt, i) => (options += `<option value="${i}">${opt}</option>`));
     domElements.shellSize.innerHTML = options;
 
+    // 画质选项
     populateSelectOptions(domElements.quality, [
         { label: "低", value: QUALITY_LOW },
         { label: "正常", value: QUALITY_NORMAL },
         { label: "高", value: QUALITY_HIGH },
     ]);
 
+    // 照亮天空选项
     populateSelectOptions(domElements.skyLighting, [
         { label: "不", value: SKY_LIGHT_NONE },
         { label: "暗", value: SKY_LIGHT_DIM },
         { label: "正常", value: SKY_LIGHT_NORMAL },
     ]);
 
+    // 缩放选项（不需要翻译，因为都是百分比）
     populateSelectOptions(
         domElements.scaleFactor,
         [0.5, 0.62, 0.75, 0.9, 1.0, 1.5, 2.0].map((value) => ({ value: value.toFixed(2), label: `${value * 100}%` }))
