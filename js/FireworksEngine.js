@@ -607,6 +607,33 @@ const ringShell = (size = 1) => {
     };
 };
 
+// 爆炸环烟花效果 - 多层环形爆炸
+const explosionRingShell = (size = 1) => {
+    const color = getRandomColor();
+    const secondaryColor = getRandomColor({ notSame: color });
+    const multiRing = Math.random() < 0.7; // 70%概率多层环形
+    
+    return {
+        shellSize: size,
+        ring: true,
+        explosionRing: true, // 爆炸环标记
+        multiRing: multiRing,
+        ringLayers: multiRing ? Math.floor(Math.random() * 2) + 2 : 1, // 1-3层环形
+        color,
+        secondaryColor,
+        spreadSize: 350 + size * 120,
+        starLife: 800 + size * 180,
+        starCount: 2.5 * PI_2 * (size + 1),
+        starLifeVariation: 0.3,
+        glitter: "medium",
+        glitterColor: color === COLOR_PALETTE.Gold ? COLOR_PALETTE.Gold : COLOR_PALETTE.White,
+        pistil: Math.random() < 0.6,
+        pistilColor: createPistilColor(color),
+        streamers: Math.random() < 0.4,
+        delayExplosion: Math.random() < 0.5, // 50%概率延迟爆炸
+    };
+};
+
 const crossetteShell = (size = 1) => {
     const color = getRandomColor({ limitWhite: true });
     return {
@@ -739,6 +766,7 @@ const shellFactories = {
     "Horse Tail": horsetailShell,
     Palm: palmShell,
     Ring: ringShell,
+    "Explosion Ring": explosionRingShell,
     Strobe: strobeShell,
     Willow: willowShell,
     Heart: heartShell,
@@ -1354,6 +1382,30 @@ function createHeartBurstEffect(count, particleFactory) {
     }
 }
 
+function explosionRingStarEffect(star) {
+    const count = highQualityMode ? 24 : 12;
+    const delay = Math.random() * 200 + 100; // 100-300ms延迟
+    
+    // 创建二次爆炸的火花
+    createBurstEffect(count, (angle, speedMult) => {
+        const spark = Spark.add(
+            star.x, 
+            star.y, 
+            star.color, 
+            angle, 
+            speedMult * 1.8, 
+            400 + Math.random() * 200
+        );
+        
+        // 添加闪烁效果
+        spark.sparkFreq = 60;
+        spark.sparkSpeed = 0.4;
+        spark.sparkLife = 200;
+        spark.sparkLifeVariation = 2;
+    });
+    
+}
+
 function crossetteStarEffect(star) {
     const startAngle = Math.random() * PI_HALF;
     createParticleArc(startAngle, PI_2, 4, 0.5, (angle) => {
@@ -1652,6 +1704,17 @@ class FireworkShell {
             }
         }
 
+        // 爆炸环烟花效果
+        if (this.explosionRing) {
+            onDeath = (star) => {
+                if (!playedDeathSound) {
+                    audioManager.playSound("burstSmall");
+                    playedDeathSound = true;
+                    audioManager.playSound("crackle");
+                }
+                explosionRingStarEffect(star);
+            };
+        }
         if (this.crossette)
             onDeath = (star) => {
                 if (!playedDeathSound) {
@@ -1808,29 +1871,75 @@ class FireworkShell {
                 const ringStartAngle = Math.random() * Math.PI;
                 const ringSquash = Math.pow(Math.random(), 2) * 0.85 + 0.15;
 
-                createBurstEffect(this.starCount, (angle, ringSize) => {
-                    const initSpeedX = Math.sin(angle) * speed * ringSquash;
-                    const initSpeedY = Math.cos(angle) * speed;
-                    const newSpeed = MathUtilities.calculatePointDistance(0, 0, initSpeedX, initSpeedY);
-                    const newAngle = MathUtilities.calculatePointAngle(0, 0, initSpeedX, initSpeedY) + ringStartAngle;
-                    const star = Star.add(
-                        x,
-                        y,
-                        color,
-                        newAngle,
-                        newSpeed,
-                        this.starLife + Math.random() * this.starLife * this.starLifeVariation
-                    );
+                // 爆炸环烟花的多层环形效果
+                if (this.explosionRing && this.multiRing) {
+                    const layers = this.ringLayers;
+                    const layerDelay = this.delayExplosion ? 50 : 0; // 每层延迟50ms
+                    
+                    for (let layer = 0; layer < layers; layer++) {
+                        const layerSize = 0.7 + (layer * 0.3); // 每层逐渐变大
+                        const layerColor = layer === 0 ? color : this.secondaryColor;
+                        
+                        setTimeout(() => {
+                            createBurstEffect(this.starCount / layers, (angle, ringSize) => {
+                                const initSpeedX = Math.sin(angle) * speed * ringSquash * layerSize;
+                                const initSpeedY = Math.cos(angle) * speed * layerSize;
+                                const newSpeed = MathUtilities.calculatePointDistance(0, 0, initSpeedX, initSpeedY);
+                                const newAngle = MathUtilities.calculatePointAngle(0, 0, initSpeedX, initSpeedY) + ringStartAngle;
+                                const star = Star.add(
+                                    x,
+                                    y,
+                                    layerColor,
+                                    newAngle,
+                                    newSpeed,
+                                    this.starLife + Math.random() * this.starLife * this.starLifeVariation
+                                );
 
-                    if (this.glitter) {
-                        star.sparkFreq = sparkFreq;
-                        star.sparkSpeed = sparkSpeed;
-                        star.sparkLife = sparkLife;
-                        star.sparkLifeVariation = sparkLifeVariation;
-                        star.sparkColor = this.glitterColor;
-                        star.sparkTimer = Math.random() * star.sparkFreq;
+                                if (this.glitter) {
+                                    star.sparkFreq = sparkFreq;
+                                    star.sparkSpeed = sparkSpeed;
+                                    star.sparkLife = sparkLife;
+                                    star.sparkLifeVariation = sparkLifeVariation;
+                                    star.sparkColor = this.glitterColor;
+                                    star.sparkTimer = Math.random() * star.sparkFreq;
+                                }
+                                
+                                if (this.explosionRing) {
+                                    star.onDeath = onDeath;
+                                }
+                            });
+                        }, layer * layerDelay);
                     }
-                });
+                } else {
+                    // 单层环形爆炸
+                    createBurstEffect(this.starCount, (angle, ringSize) => {
+                        const initSpeedX = Math.sin(angle) * speed * ringSquash;
+                        const initSpeedY = Math.cos(angle) * speed;
+                        const newSpeed = MathUtilities.calculatePointDistance(0, 0, initSpeedX, initSpeedY);
+                        const newAngle = MathUtilities.calculatePointAngle(0, 0, initSpeedX, initSpeedY) + ringStartAngle;
+                        const star = Star.add(
+                            x,
+                            y,
+                            color,
+                            newAngle,
+                            newSpeed,
+                            this.starLife + Math.random() * this.starLife * this.starLifeVariation
+                        );
+
+                        if (this.glitter) {
+                            star.sparkFreq = sparkFreq;
+                            star.sparkSpeed = sparkSpeed;
+                            star.sparkLife = sparkLife;
+                            star.sparkLifeVariation = sparkLifeVariation;
+                            star.sparkColor = this.glitterColor;
+                            star.sparkTimer = Math.random() * star.sparkFreq;
+                        }
+                        
+                        if (this.explosionRing) {
+                            star.onDeath = onDeath;
+                        }
+                    });
+                }
             } else if (this.heart) {
                 createHeartBurstEffect(this.starCount, starFactory);
             } else {
@@ -1892,11 +2001,26 @@ class FireworkShell {
 
         BurstFlash.add(x, y, this.spreadSize / 4);
 
+        // 爆炸环烟花的多重闪光效果
+        if (this.explosionRing && this.multiRing) {
+            const layers = this.ringLayers;
+            const flashDelay = this.delayExplosion ? 50 : 0;
+            
+            for (let layer = 0; layer < layers; layer++) {
+                setTimeout(() => {
+                    BurstFlash.add(x, y, this.spreadSize / (4 + layer));
+                }, layer * flashDelay);
+            }
+        }
+
         if (this.comet) {
             const maxDiff = 2;
             const sizeDifferenceFromMaxSize = Math.min(maxDiff, getShellSize() - this.shellSize);
             const soundScale = (1 - sizeDifferenceFromMaxSize / maxDiff) * 0.3 + 0.7;
             audioManager.playSound("burst", soundScale);
+        } else if (this.explosionRing) {
+            // 爆炸环烟花的特殊音效
+            audioManager.playSound("burst", 0.8);
         }
     }
 }
