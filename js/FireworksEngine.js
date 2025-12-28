@@ -730,6 +730,95 @@ const heartShell = (size = 1) => {
     };
 };
 
+// 螺旋烟花 - 螺旋形爆炸效果
+const spiralShell = (size = 1) => {
+    const color = getRandomColor();
+    return {
+        shellSize: size,
+        spiral: true,
+        color,
+        spreadSize: 320 + size * 110,
+        starLife: 850 + size * 190,
+        starCount: 3.0 * PI_2 * (size + 1),
+        starLifeVariation: 0.4,
+        glitter: "medium",
+        glitterColor: color === COLOR_PALETTE.Gold ? COLOR_PALETTE.Gold : COLOR_PALETTE.White,
+        pistil: Math.random() < 0.5,
+        pistilColor: createPistilColor(color),
+    };
+};
+
+// 瀑布烟花 - 向下流动的瀑布效果
+const waterfallShell = (size = 1) => {
+    const color = getRandomColor();
+    return {
+        shellSize: size,
+        waterfall: true,
+        color,
+        spreadSize: 280 + size * 90,
+        starLife: 1200 + size * 250,
+        starDensity: 0.8,
+        starLifeVariation: 0.6,
+        glitter: "willow",
+        glitterColor: color,
+        streamers: true,
+    };
+};
+
+// 彩虹烟花 - 多彩渐变效果
+const rainbowShell = (size = 1) => {
+    const colors = [
+        COLOR_PALETTE.Red,
+        COLOR_PALETTE.Orange,
+        COLOR_PALETTE.Yellow,
+        COLOR_PALETTE.Green,
+        COLOR_PALETTE.Blue,
+        COLOR_PALETTE.Purple
+    ];
+    return {
+        shellSize: size,
+        rainbow: true,
+        color: colors,
+        spreadSize: 340 + size * 120,
+        starLife: 900 + size * 200,
+        starCount: 2.8 * PI_2 * (size + 1),
+        glitter: "light",
+        glitterColor: COLOR_PALETTE.White,
+    };
+};
+
+// 流星烟花 - 带尾迹的流星效果
+const meteorShell = (size = 1) => {
+    const color = getRandomColor();
+    return {
+        shellSize: size,
+        meteor: true,
+        color,
+        spreadSize: 260 + size * 80,
+        starLife: 1500 + size * 300,
+        starDensity: 0.6,
+        starLifeVariation: 0.8,
+        glitter: "heavy",
+        glitterColor: color,
+        trail: true,
+    };
+};
+
+// 雪花烟花 - 雪花形状的爆炸效果
+const snowflakeShell = (size = 1) => {
+    const color = COLOR_PALETTE.White;
+    return {
+        shellSize: size,
+        snowflake: true,
+        color,
+        spreadSize: 300 + size * 100,
+        starLife: 1100 + size * 220,
+        starCount: 2.4 * PI_2 * (size + 1),
+        glitter: "light",
+        glitterColor: COLOR_PALETTE.White,
+    };
+};
+
 function getRandomShellName() {
     return Math.random() < 0.5 ? "Crysanthemum" : shellTypesList[(Math.random() * (shellTypesList.length - 1) + 1) | 0];
 }
@@ -767,6 +856,11 @@ const shellFactories = {
     Palm: palmShell,
     Ring: ringShell,
     "Explosion Ring": explosionRingShell,
+    Spiral: spiralShell,
+    Waterfall: waterfallShell,
+    Rainbow: rainbowShell,
+    Meteor: meteorShell,
+    Snowflake: snowflakeShell,
     Strobe: strobeShell,
     Willow: willowShell,
     Heart: heartShell,
@@ -1406,6 +1500,78 @@ function explosionRingStarEffect(star) {
     
 }
 
+// 螺旋爆炸效果
+function spiralStarEffect(star) {
+    const count = highQualityMode ? 16 : 8;
+    const spiralTurns = 3;
+    
+    for (let i = 0; i < count; i++) {
+        const angle = (i / count) * PI_2;
+        const spiralAngle = angle + spiralTurns * Math.PI * (i / count);
+        const speed = 1.2 + Math.random() * 0.6;
+        
+        Spark.add(
+            star.x,
+            star.y,
+            star.color,
+            spiralAngle,
+            speed,
+            500 + Math.random() * 200
+        );
+    }
+    
+}
+
+// 瀑布效果
+function waterfallStarEffect(star) {
+    const count = highQualityMode ? 20 : 10;
+    
+    for (let i = 0; i < count; i++) {
+        const angle = Math.PI + (Math.random() - 0.5) * 0.5; // 主要向下
+        const speed = 0.8 + Math.random() * 0.4;
+        
+        const spark = Spark.add(
+            star.x,
+            star.y,
+            star.color,
+            angle,
+            speed,
+            800 + Math.random() * 300
+        );
+        
+        spark.sparkFreq = 80;
+        spark.sparkSpeed = 0.3;
+        spark.sparkLife = 400;
+    }
+}
+
+// 雪花效果
+function snowflakeStarEffect(star) {
+    const arms = 6; // 雪花6个臂
+    const pointsPerArm = highQualityMode ? 4 : 2;
+    
+    for (let arm = 0; arm < arms; arm++) {
+        const baseAngle = (arm / arms) * PI_2;
+        
+        for (let i = 0; i < pointsPerArm; i++) {
+            const distance = 0.2 + (i * 0.15);
+            const angle = baseAngle + (Math.random() - 0.5) * 0.1;
+            const speed = 0.6 + Math.random() * 0.3;
+            
+            Spark.add(
+                star.x,
+                star.y,
+                COLOR_PALETTE.White,
+                angle,
+                speed,
+                600 + Math.random() * 200
+            );
+        }
+    }
+    
+    audioManager.playSound("burstSmall");
+}
+
 function crossetteStarEffect(star) {
     const startAngle = Math.random() * PI_HALF;
     createParticleArc(startAngle, PI_2, 4, 0.5, (angle) => {
@@ -1715,6 +1881,37 @@ class FireworkShell {
                 explosionRingStarEffect(star);
             };
         }
+        // 螺旋烟花效果
+        if (this.spiral) {
+            onDeath = (star) => {
+                if (!playedDeathSound) {
+                    audioManager.playSound("burstSmall");
+                    playedDeathSound = true;
+                    audioManager.playSound("crackle");
+                }
+                spiralStarEffect(star);
+            };
+        }
+        // 瀑布烟花效果
+        if (this.waterfall) {
+            onDeath = (star) => {
+                if (!playedDeathSound) {
+                    audioManager.playSound("burstSmall");
+                    playedDeathSound = true;
+                }
+                waterfallStarEffect(star);
+            };
+        }
+        // 雪花烟花效果
+        if (this.snowflake) {
+            onDeath = (star) => {
+                if (!playedDeathSound) {
+                    audioManager.playSound("burstSmall");
+                    playedDeathSound = true;
+                }
+                snowflakeStarEffect(star);
+            };
+        }
         if (this.crossette)
             onDeath = (star) => {
                 if (!playedDeathSound) {
@@ -1942,6 +2139,23 @@ class FireworkShell {
                 }
             } else if (this.heart) {
                 createHeartBurstEffect(this.starCount, starFactory);
+            } else if (this.spiral) {
+                // 螺旋形爆炸效果
+                const spiralTurns = 2;
+                const spiralStart = Math.random() * PI_2;
+                
+                createBurstEffect(this.starCount, (angle, ringSize) => {
+                    const spiralAngle = angle + spiralTurns * Math.PI * (angle / PI_2);
+                    starFactory(spiralAngle + spiralStart, ringSize);
+                });
+            } else if (this.snowflake) {
+                // 雪花形爆炸效果
+                const arms = 6;
+                createBurstEffect(this.starCount, (angle, ringSize) => {
+                    // 将角度对齐到最近的雪花臂
+                    const armAngle = Math.round(angle / (PI_2 / arms)) * (PI_2 / arms);
+                    starFactory(armAngle, ringSize);
+                });
             } else {
                 createBurstEffect(this.starCount, starFactory);
             }
