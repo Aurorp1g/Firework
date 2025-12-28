@@ -819,6 +819,110 @@ const snowflakeShell = (size = 1) => {
     };
 };
 
+// 银河烟花 - 星云般的扩散效果
+const galaxyShell = (size = 1) => {
+    const colors = [COLOR_PALETTE.Blue, COLOR_PALETTE.Purple, COLOR_PALETTE.White];
+    return {
+        shellSize: size,
+        galaxy: true,
+        color: colors,
+        spreadSize: 400 + size * 150,
+        starLife: 1300 + size * 280,
+        starDensity: 0.7,
+        starLifeVariation: 0.9,
+        glitter: "medium",
+        glitterColor: COLOR_PALETTE.White,
+        nebula: true,
+    };
+};
+
+// 闪电烟花 - 闪电状的爆炸效果
+const lightningShell = (size = 1) => {
+    const color = COLOR_PALETTE.White;
+    return {
+        shellSize: size,
+        lightning: true,
+        color,
+        spreadSize: 280 + size * 90,
+        starLife: 700 + size * 150,
+        starCount: 1.8 * PI_2 * (size + 1),
+        glitter: "light",
+        glitterColor: COLOR_PALETTE.White,
+        flash: true,
+    };
+};
+
+// 漩涡烟花 - 旋转的漩涡效果
+const whirlpoolShell = (size = 1) => {
+    const color = getRandomColor();
+    return {
+        shellSize: size,
+        whirlpool: true,
+        color,
+        spreadSize: 350 + size * 120,
+        starLife: 950 + size * 200,
+        starCount: 2.6 * PI_2 * (size + 1),
+        glitter: "heavy",
+        glitterColor: color,
+        rotation: true,
+    };
+};
+
+// 烟火瀑布 - 连续下落的烟花效果
+const firefallShell = (size = 1) => {
+    const color = getRandomColor();
+    return {
+        shellSize: size,
+        firefall: true,
+        color,
+        spreadSize: 320 + size * 110,
+        starLife: 1800 + size * 350,
+        starDensity: 0.5,
+        starLifeVariation: 1.2,
+        glitter: "willow",
+        glitterColor: color,
+        continuous: true,
+    };
+};
+
+// 时间延迟烟花 - 分阶段爆炸效果
+const timeDelayShell = (size = 1) => {
+    const color = getRandomColor();
+    return {
+        shellSize: size,
+        timeDelay: true,
+        color,
+        spreadSize: 330 + size * 115,
+        starLife: 1000 + size * 210,
+        starCount: 2.7 * PI_2 * (size + 1),
+        glitter: "medium",
+        glitterColor: color,
+        stages: 3,
+    };
+};
+
+// 彩虹漩涡 - 彩色漩涡效果
+const rainbowWhirlShell = (size = 1) => {
+    const colors = [
+        COLOR_PALETTE.Red,
+        COLOR_PALETTE.Orange, 
+        COLOR_PALETTE.Yellow,
+        COLOR_PALETTE.Green,
+        COLOR_PALETTE.Blue,
+        COLOR_PALETTE.Purple
+    ];
+    return {
+        shellSize: size,
+        rainbowWhirl: true,
+        color: colors,
+        spreadSize: 380 + size * 130,
+        starLife: 1100 + size * 230,
+        starCount: 3.2 * PI_2 * (size + 1),
+        glitter: "light",
+        glitterColor: COLOR_PALETTE.White,
+    };
+};
+
 function getRandomShellName() {
     return Math.random() < 0.5 ? "Crysanthemum" : shellTypesList[(Math.random() * (shellTypesList.length - 1) + 1) | 0];
 }
@@ -861,6 +965,12 @@ const shellFactories = {
     Rainbow: rainbowShell,
     Meteor: meteorShell,
     Snowflake: snowflakeShell,
+    Galaxy: galaxyShell,
+    Lightning: lightningShell,
+    Whirlpool: whirlpoolShell,
+    Firefall: firefallShell,
+    "Time Delay": timeDelayShell,
+    "Rainbow Whirl": rainbowWhirlShell,
     Strobe: strobeShell,
     Willow: willowShell,
     Heart: heartShell,
@@ -1547,7 +1657,7 @@ function waterfallStarEffect(star) {
 
 // 雪花效果
 function snowflakeStarEffect(star) {
-    const arms = 6; // 雪花6个臂
+    const arms = 6;
     const pointsPerArm = highQualityMode ? 4 : 2;
     
     for (let arm = 0; arm < arms; arm++) {
@@ -1570,6 +1680,123 @@ function snowflakeStarEffect(star) {
     }
     
     audioManager.playSound("burstSmall");
+}
+
+// 银河星云效果
+function galaxyStarEffect(star) {
+    const count = highQualityMode ? 20 : 10;
+    const nebulaSize = 2.5;
+    
+    for (let i = 0; i < count; i++) {
+        const angle = Math.random() * PI_2;
+        const distance = Math.random() * nebulaSize;
+        const speed = 0.4 + Math.random() * 0.3;
+        
+        Spark.add(
+            star.x,
+            star.y,
+            Math.random() < 0.7 ? COLOR_PALETTE.Blue : COLOR_PALETTE.Purple,
+            angle,
+            speed,
+            900 + Math.random() * 300
+        );
+    }
+    
+    // 添加中心白色闪光
+    for (let i = 0; i < 5; i++) {
+        Spark.add(
+            star.x,
+            star.y,
+            COLOR_PALETTE.White,
+            Math.random() * PI_2,
+            0.8 + Math.random() * 0.4,
+            400 + Math.random() * 200
+        );
+    }
+}
+
+// 闪电效果
+function lightningStarEffect(star) {
+    const branches = highQualityMode ? 3 : 2;
+    
+    for (let branch = 0; branch < branches; branch++) {
+        const startAngle = Math.random() * PI_2;
+        const branchLength = 3 + Math.random() * 2;
+        
+        for (let segment = 0; segment < branchLength; segment++) {
+            const angle = startAngle + (Math.random() - 0.5) * 0.3;
+            const speed = 1.0 + segment * 0.2;
+            
+            Spark.add(
+                star.x,
+                star.y,
+                COLOR_PALETTE.White,
+                angle,
+                speed,
+                300 + Math.random() * 150
+            );
+        }
+    }
+    
+    // 闪电闪光效果
+    BurstFlash.add(star.x, star.y, 30);
+    audioManager.playSound("burstSmall");
+}
+
+// 漩涡效果
+function whirlpoolStarEffect(star) {
+    const count = highQualityMode ? 15 : 8;
+    const rotationSpeed = 0.1;
+    
+    for (let i = 0; i < count; i++) {
+        const baseAngle = (i / count) * PI_2;
+        const spiralAngle = baseAngle + rotationSpeed * i;
+        const speed = 0.7 + Math.random() * 0.4;
+        
+        const spark = Spark.add(
+            star.x,
+            star.y,
+            star.color,
+            spiralAngle,
+            speed,
+            700 + Math.random() * 200
+        );
+        
+        // 添加旋转效果
+        spark.spinSpeed = 0.05;
+        spark.spinRadius = 0.5 + Math.random() * 0.3;
+    }
+}
+
+
+// 时间延迟效果
+function timeDelayStarEffect(star) {
+    const stages = 3;
+    const stageDelay = 150;
+    
+    for (let stage = 0; stage < stages; stage++) {
+        setTimeout(() => {
+            const count = highQualityMode ? 6 : 3;
+            
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * PI_2;
+                const speed = 0.6 + Math.random() * 0.3;
+                
+                Spark.add(
+                    star.x,
+                    star.y,
+                    star.color,
+                    angle,
+                    speed,
+                    400 + Math.random() * 150
+                );
+            }
+            
+            if (stage === stages - 1) {
+                audioManager.playSound("burstSmall");
+            }
+        }, stage * stageDelay);
+    }
 }
 
 function crossetteStarEffect(star) {
@@ -1612,7 +1839,7 @@ function renderSkyColor(speed) {
     currentSkyColor.g += ((targetSkyColor.g - currentSkyColor.g) / colorChangeSpeed) * speed;
     currentSkyColor.b += ((targetSkyColor.b - currentSkyColor.b) / colorChangeSpeed) * speed;
 
-    domElements.canvasContainer.style.backgroundColor = `rgb(${currentSkyColor.r | 0}, ${currentSkyColor.g | 0}, ${currentSkyColor.b | 0})`;
+domElements.canvasContainer.style.backgroundColor = `rgb(${currentSkyColor.r | 0}, ${currentSkyColor.g | 0}, ${currentSkyColor.b | 0})`;
 }
 
 mainCanvas.addEventListener("ticker", updateFrame);
@@ -1912,6 +2139,46 @@ class FireworkShell {
                 snowflakeStarEffect(star);
             };
         }
+        // 银河烟花效果
+        if (this.galaxy) {
+            onDeath = (star) => {
+                if (!playedDeathSound) {
+                    audioManager.playSound("burstSmall");
+                    playedDeathSound = true;
+                }
+                galaxyStarEffect(star);
+            };
+        }
+        // 闪电烟花效果
+        if (this.lightning) {
+            onDeath = (star) => {
+                if (!playedDeathSound) {
+                    audioManager.playSound("burstSmall");
+                    playedDeathSound = true;
+                }
+                lightningStarEffect(star);
+            };
+        }
+        // 漩涡烟花效果
+        if (this.whirlpool) {
+            onDeath = (star) => {
+                if (!playedDeathSound) {
+                    audioManager.playSound("burstSmall");
+                    playedDeathSound = true;
+                }
+                whirlpoolStarEffect(star);
+            };
+        }
+        // 时间延迟烟花效果
+        if (this.timeDelay) {
+            onDeath = (star) => {
+                if (!playedDeathSound) {
+                    audioManager.playSound("burstSmall");
+                    playedDeathSound = true;
+                }
+                timeDelayStarEffect(star);
+            };
+        }
         if (this.crossette)
             onDeath = (star) => {
                 if (!playedDeathSound) {
@@ -2152,9 +2419,35 @@ class FireworkShell {
                 // 雪花形爆炸效果
                 const arms = 6;
                 createBurstEffect(this.starCount, (angle, ringSize) => {
-                    // 将角度对齐到最近的雪花臂
                     const armAngle = Math.round(angle / (PI_2 / arms)) * (PI_2 / arms);
                     starFactory(armAngle, ringSize);
+                });
+            } else if (this.galaxy) {
+                // 银河星云效果 - 随机扩散
+                createBurstEffect(this.starCount, (angle, ringSize) => {
+                    const randomAngle = angle + (Math.random() - 0.5) * 0.5;
+                    starFactory(randomAngle, ringSize * 1.2);
+                });
+            } else if (this.lightning) {
+                // 闪电效果 - 集中爆发
+                const lightningBranches = 4;
+                for (let i = 0; i < lightningBranches; i++) {
+                    const branchAngle = (i / lightningBranches) * PI_2;
+                    createBurstEffect(this.starCount / lightningBranches, starFactory, branchAngle, PI_2 / lightningBranches);
+                }
+            } else if (this.whirlpool) {
+                // 漩涡效果 - 旋转分布
+                const whirlTurns = 1.5;
+                createBurstEffect(this.starCount, (angle, ringSize) => {
+                    const whirlAngle = angle + whirlTurns * Math.PI * (angle / PI_2);
+                    starFactory(whirlAngle, ringSize);
+                });
+            } else if (this.rainbowWhirl) {
+                // 彩虹漩涡效果
+                const whirlTurns = 2;
+                createBurstEffect(this.starCount, (angle, ringSize) => {
+                    const whirlAngle = angle + whirlTurns * Math.PI * (angle / PI_2);
+                    starFactory(whirlAngle, ringSize);
                 });
             } else {
                 createBurstEffect(this.starCount, starFactory);
@@ -2465,7 +2758,7 @@ const audioManager = {
 
         const gainNode = this.audioContext.createGain();
         gainNode.gain.value = scaledVolume;
-
+        
         const buffer = MathUtilities.randomChoice(source.buffers);
         const bufferSource = this.audioContext.createBufferSource();
         bufferSource.playbackRate.value = scaledPlaybackRate;
